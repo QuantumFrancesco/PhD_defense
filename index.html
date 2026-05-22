@@ -1,416 +1,1079 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>RSVP Admin · Francesco's Defense</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Francesco's PhD Defense — RSVP</title>
 <style>
   :root{
+    /* Apple-style SF stack */
     --sf: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
           "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
     --sf-mono: ui-monospace, "SF Mono", Menlo, Monaco, "Cascadia Mono", monospace;
-    --bg: #f5f5f7;
+
+    --bg: #f5f5f7;       /* Apple light grey */
     --surface: #ffffff;
-    --ink: #1d1d1f;
+    --ink: #1d1d1f;      /* SF black */
     --ink-2: #424245;
     --muted: #86868b;
     --rule: #e3e3e6;
     --field-bg: #f2f2f4;
-    --c1:#ff3b30; --c2:#007aff; --c3:#ffcc00; --c4:#34c759;
-    --c5:#af52de; --c6:#ff2d92; --c7:#00c7be; --c8:#ff9500;
+
+    /* soft pastel palette */
+    --c1: #ff3b30;  /* red */
+    --c2: #007aff;  /* blue */
+    --c3: #ffcc00;  /* yellow */
+    --c4: #34c759;  /* green */
+    --c5: #af52de;  /* purple */
+    --c6: #ff2d92;  /* pink */
+    --c7: #00c7be;  /* teal */
+    --c8: #ff9500;  /* orange */
+
+    --c-current: var(--c2);
+    --c-soft: color-mix(in oklab, var(--c-current) 14%, white);
+
+    --radius-lg: 20px;
+    --radius-md: 14px;
+    --radius-sm: 10px;
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
-  body{font-family:var(--sf);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;letter-spacing:-.01em;}
+  body{
+    font-family: var(--sf);
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    letter-spacing: -0.01em;
+    overflow-x:hidden;
+  }
+  ::selection{background:var(--c-current);color:#fff}
 
-  .shell{max-width:1280px;margin:0 auto;padding:32px 24px 80px}
+  /* ===== ambient color wash, very subtle ===== */
+  .wash{
+    position:fixed;inset:-20vh -10vw;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(60vw 60vw at 12% 0%,
+        color-mix(in oklab, var(--c-current) 22%, transparent) 0%, transparent 60%),
+      radial-gradient(45vw 45vw at 100% 100%,
+        color-mix(in oklab, var(--c-current) 12%, transparent) 0%, transparent 55%);
+    transition: background .8s ease;
+    filter: saturate(1.05);
+  }
 
-  /* topbar */
-  .topbar{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:rgba(255,255,255,.85);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border:1px solid var(--rule);border-radius:999px;}
-  .brand{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500}
-  .brand .glyph{width:26px;height:26px;border-radius:50%;background:var(--c2);color:#fff;display:grid;place-items:center;font-weight:600;font-size:12px;box-shadow:0 0 0 3px color-mix(in oklab,var(--c2) 16%,transparent);}
+  /* ===== shell ===== */
+  .shell{
+    position:relative;z-index:1;
+    max-width:980px;margin:0 auto;
+    padding: 28px 24px 80px;
+  }
+
+  /* ===== top bar ===== */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding: 14px 20px;
+    background: rgba(255,255,255,.72);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    backdrop-filter: saturate(180%) blur(20px);
+    border:1px solid var(--rule);
+    border-radius: 999px;
+    box-shadow: 0 1px 0 rgba(0,0,0,.02);
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500;color:var(--ink)}
+  .brand .glyph{
+    width:26px;height:26px;border-radius:50%;
+    background: var(--c-current);
+    display:grid;place-items:center;
+    color:#fff;font-weight:600;font-size:12px;
+    transition: background .4s ease;
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--c-current) 16%, transparent);
+  }
   .brand .sep{color:var(--muted);font-weight:400}
-  .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:12px;color:var(--ink-2);background:var(--field-bg);}
-  .chip .live{width:6px;height:6px;border-radius:50%;background:var(--c4);box-shadow:0 0 0 3px color-mix(in oklab,var(--c4) 24%,transparent)}
-
-  /* page header */
-  .header{margin:32px 6px 24px}
-  h1{font-size:clamp(34px,4.4vw,52px);font-weight:600;letter-spacing:-.025em;line-height:1.05;margin:0 0 8px;}
-  h1 em{font-style:normal;background:linear-gradient(120deg,var(--c2),color-mix(in oklab,var(--c2) 70%,white));-webkit-background-clip:text;background-clip:text;color:transparent;}
-  .header .sub{font-size:16px;color:var(--ink-2);max-width:60ch}
-
-  /* setup card */
-  .setup-card{
-    background:var(--surface);border:1px solid var(--rule);border-radius:22px;
-    padding:32px 36px;margin-bottom:28px;
-    box-shadow:0 1px 0 rgba(0,0,0,.02),0 20px 60px -30px rgba(0,0,0,.12);
+  .top-meta{display:flex;align-items:center;gap:8px}
+  .chip{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:6px 10px;border-radius:999px;font-size:12px;color:var(--ink-2);
+    background: var(--field-bg);
   }
-  .setup-card h2{font-size:17px;font-weight:600;margin:0 0 6px;letter-spacing:-.01em;}
-  .setup-card p{font-size:14px;color:var(--muted);margin:0 0 18px;line-height:1.5;max-width:70ch;}
-  .tabs{display:flex;gap:0;border-bottom:1px solid var(--rule);margin-bottom:22px;}
-  .tab{all:unset;cursor:pointer;padding:10px 18px;font-size:13.5px;font-weight:500;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s,border-color .15s;}
-  .tab.active{color:var(--c2);border-bottom-color:var(--c2);}
+  .chip .live{
+    width:6px;height:6px;border-radius:50%;background:var(--c4);
+    box-shadow:0 0 0 3px color-mix(in oklab, var(--c4) 24%, transparent);
+  }
 
-  .input-row{display:flex;gap:10px;align-items:stretch;max-width:640px;}
-  .text-input{flex:1;border:1px solid var(--rule);outline:none;background:var(--field-bg);border-radius:12px;padding:12px 16px;font-family:var(--sf);font-size:14px;color:var(--ink);transition:box-shadow .2s,background .2s;}
-  .text-input:focus{background:#fff;box-shadow:0 0 0 4px color-mix(in oklab,var(--c2) 18%,transparent),inset 0 0 0 1.5px var(--c2);}
-  .text-input::placeholder{color:#b5b5ba}
+  /* ===== rail (segmented) ===== */
+  .rail-wrap{margin: 22px 6px 28px}
+  .rail{display:flex;gap:6px}
+  .seg{
+    flex:1;height:5px;border-radius:99px;background:#e6e6e9;
+    position:relative;cursor:pointer;transition:transform .2s, background .25s;
+  }
+  .seg:hover{transform:translateY(-1px)}
+  .seg.done{background:var(--ink)}
+  .seg.active{background:var(--seg-color, var(--c-current))}
+  .seg.locked{opacity:.55;cursor:not-allowed}
 
-  .note-box{border-radius:12px;padding:14px 16px;font-size:13px;line-height:1.55;color:var(--ink-2);}
-  .note-box.yellow{background:color-mix(in oklab,var(--c3) 14%,white);border:1px solid color-mix(in oklab,var(--c3) 35%,white);}
-  .note-box.blue{background:color-mix(in oklab,var(--c2) 10%,white);border:1px solid color-mix(in oklab,var(--c2) 25%,white);}
-  .note-box b{font-weight:600;color:var(--ink)}
-  .note-box code{font-family:var(--sf-mono);background:#fff;padding:1px 5px;border-radius:5px;border:1px solid var(--rule);font-size:12px;}
+  /* ===== stage / cards ===== */
+  .stage{
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 28px;
+    box-shadow: 0 1px 0 rgba(0,0,0,.02), 0 30px 80px -40px rgba(0,0,0,.18);
+    padding: 56px 56px 36px;
+    min-height: 620px;
+    display:flex;flex-direction:column;
+    position:relative;overflow:hidden;
+  }
+  @media (max-width: 720px){
+    .stage{padding:32px 22px 24px;border-radius:22px}
+    .shell{padding:18px 14px 60px}
+  }
+  .stage::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background: linear-gradient(180deg, rgba(255,255,255,.85), transparent 24%);
+  }
+  .stage-head{
+    position:relative;z-index:1;
+    display:flex;justify-content:space-between;align-items:center;
+    font-size:12px;color:var(--muted);
+    margin-bottom: 28px;
+  }
+  .stage-head .step-meta{
+    display:inline-flex;align-items:center;gap:10px;
+    padding:6px 10px;border-radius:999px;background:var(--c-soft);color:var(--c-current);
+    font-weight:500;font-size:12px;
+  }
+  .stage-head .step-meta .n{
+    width:18px;height:18px;border-radius:50%;
+    background:var(--c-current);color:#fff;
+    display:grid;place-items:center;font-size:10.5px;font-weight:600;
+  }
 
-  /* stats */
-  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:0 0 28px;}
-  .stat{background:var(--surface);border:1px solid var(--rule);border-radius:18px;padding:18px 20px;display:flex;flex-direction:column;gap:4px;position:relative;overflow:hidden;}
-  .stat .k{font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:500}
-  .stat .v{font-size:32px;font-weight:600;letter-spacing:-.025em;line-height:1}
-  .stat .s{font-size:12.5px;color:var(--muted)}
-  .stat::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--stat-color,var(--c2));border-radius:0 0 18px 18px;}
+  /* slides */
+  .slide{display:none;position:relative;z-index:1;flex:1;flex-direction:column}
+  .slide.active{display:flex;animation:slidein .5s cubic-bezier(.2,.7,.2,1)}
+  @keyframes slidein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
-  /* toolbar */
-  .toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 14px;}
-  .search{flex:1;max-width:380px;min-width:200px;display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--rule);border-radius:999px;padding:8px 14px;}
-  .search input{border:0;outline:0;background:transparent;flex:1;font-family:var(--sf);font-size:14px;color:var(--ink);}
-  .search input::placeholder{color:var(--muted)}
-  .actions{display:flex;gap:8px;flex-wrap:wrap}
-  .btn{all:unset;cursor:pointer;font-family:var(--sf);font-weight:500;font-size:13.5px;padding:9px 16px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;transition:background .2s,transform .15s;}
-  .btn-ghost{background:var(--field-bg);color:var(--ink)}
+  /* big headlines, light weight, tight letter-spacing — very Apple */
+  h1.q{
+    font-family: var(--sf);
+    font-weight: 600;
+    font-size: clamp(34px, 4.6vw, 56px);
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    margin: 0 0 14px;
+    color: var(--ink);
+    text-wrap:balance;
+    max-width:18ch;
+  }
+  h1.q em{
+    font-style: normal;
+    background: linear-gradient(120deg, var(--c-current), color-mix(in oklab, var(--c-current) 70%, white));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  p.lede{
+    font-size: 17px;
+    line-height: 1.5;
+    color: var(--ink-2);
+    margin: 0 0 36px;
+    max-width: 60ch;
+    font-weight: 400;
+    text-wrap: pretty;
+  }
+  p.lede.large{font-size:19px;color:var(--ink-2)}
+
+  /* invitation hero */
+  .hero{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:stretch}
+  @media (max-width: 820px){.hero{grid-template-columns:1fr}}
+
+  .save-card{
+    border-radius: 22px;
+    background: linear-gradient(135deg,
+      rgba(3, 82, 171, 0.92),
+      rgba(3, 82, 171, 0.80) 55%,
+      rgba(3, 82, 171, 0.70));
+    -webkit-backdrop-filter: saturate(160%) blur(24px);
+    backdrop-filter: saturate(160%) blur(24px);
+    color: #fff;
+    padding: 28px;
+    display:flex;flex-direction:column;
+    position:relative;overflow:hidden;
+    min-height: 320px;
+    border: 1px solid rgba(255,255,255,.22);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.28),
+      inset 0 0 60px rgba(255,255,255,.05),
+      0 20px 50px -20px rgba(3, 82, 171, 0.65);
+  }
+  .save-card .layer{
+    position:absolute;inset:0;pointer-events:none;
+    background:
+      radial-gradient(45% 55% at 85% -5%, rgba(255,255,255,.35) 0%, transparent 60%),
+      radial-gradient(50% 60% at -10% 110%, color-mix(in oklab, var(--c6) 60%, transparent) 0%, transparent 60%);
+    mix-blend-mode: screen;
+    transition: background .5s ease;
+  }
+  .save-card .label{
+    position:relative;z-index:1;
+    font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.6);
+    font-weight:500;
+  }
+  .save-card .month{
+    position:relative;z-index:1;
+    font-size:62px;font-weight:500;line-height:1;letter-spacing:-.04em;
+    margin-top:6px;
+    display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
+  }
+  .save-card .month .sub{font-size:14px;font-weight:400;color:rgba(255,255,255,.7);letter-spacing:0;text-transform:uppercase}
+  .save-card .events{
+    position:relative;z-index:1;margin-top:auto;
+    display:flex;flex-direction:column;gap:0;
+  }
+  .save-card .ev{
+    display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;
+    padding:14px 0;border-top:1px solid rgba(255,255,255,.14);
+  }
+  .save-card .ev:last-child{border-bottom:1px solid rgba(255,255,255,.14)}
+  .save-card .ev .t{font-family:var(--sf-mono);font-size:13px;color:rgba(255,255,255,.85)}
+  .save-card .ev .n{font-size:16px;font-weight:500}
+  .save-card .ev .n small{display:block;font-size:12px;font-weight:400;color:rgba(255,255,255,.6);margin-top:2px}
+  .save-card .ev .n .maplink{
+    display:inline-block;margin-top:6px;
+    font-size:11.5px;color:#fff;text-decoration:none;
+    padding:3px 9px;border-radius:999px;
+    background:rgba(255,255,255,.1);
+    border:1px solid rgba(255,255,255,.2);
+    transition:background .15s;
+  }
+  .save-card .ev .n .maplink:hover{background:rgba(255,255,255,.2)}
+  .save-card .ev .tag{
+    font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
+    padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.12);color:#fff;
+  }
+
+  /* ===== input ===== */
+  .field{margin: 4px 0 8px;max-width:680px}
+  .lbl{
+    display:block;font-size:12px;color:var(--muted);
+    margin-bottom:8px;font-weight:500;letter-spacing:.01em;
+  }
+  .input{
+    width:100%;border:0;outline:none;
+    background: var(--field-bg);
+    border-radius: 16px;
+    padding: 18px 20px;
+    font-family: var(--sf);
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+    transition: box-shadow .2s, background .2s;
+  }
+  .input::placeholder{color:#b5b5ba;font-weight:400}
+  .input:focus{
+    background:#fff;
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--c-current) 22%, transparent),
+                inset 0 0 0 1.5px var(--c-current);
+  }
+  .textarea{
+    width:100%;border:0;outline:none;
+    background: var(--field-bg);
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-family: var(--sf);
+    font-size: 15px;
+    color: var(--ink);
+    line-height: 1.5;
+    min-height: 110px;
+    resize: vertical;
+    transition: box-shadow .2s, background .2s;
+  }
+  .textarea:focus{
+    background:#fff;
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--c-current) 18%, transparent),
+                inset 0 0 0 1.5px var(--c-current);
+  }
+  .textarea::placeholder{color:#b5b5ba}
+
+  /* ===== card choices (Apple style) ===== */
+  .cards{
+    display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+    gap:12px;max-width:920px;
+  }
+  .opt{
+    position:relative;cursor:pointer;
+    background: var(--field-bg);
+    border-radius: 18px;
+    padding: 18px 62px 18px 56px;
+    transition: background .2s, box-shadow .2s, transform .15s;
+    --opt-color: var(--c-current);
+  }
+  .opt:hover{background:#ececef;transform:translateY(-1px)}
+  .opt input{position:absolute;opacity:0;pointer-events:none}
+  .opt .dot{
+    position:absolute;left:18px;top:50%;transform:translateY(-50%);
+    width:22px;height:22px;border-radius:50%;
+    background:#fff;border:1.5px solid #d1d1d6;
+    display:grid;place-items:center;
+    transition: background .2s, border-color .2s;
+  }
+  .opt .dot::after{
+    content:"";width:10px;height:10px;border-radius:50%;
+    background:var(--opt-color);opacity:0;transform:scale(.4);
+    transition: opacity .2s, transform .2s;
+  }
+  .opt .ttl{font-size:17px;font-weight:500;letter-spacing:-.01em}
+  .opt .sub{font-size:13.5px;color:var(--muted);margin-top:2px;line-height:1.4;font-weight:400}
+  .opt .ico{
+    position:absolute;right:16px;top:16px;
+    width:32px;height:32px;border-radius:10px;
+    background:var(--opt-color);color:#fff;
+    display:grid;place-items:center;font-size:14px;font-weight:600;
+    opacity:.18;transition:opacity .2s;
+  }
+  .opt:has(input:checked){
+    background: color-mix(in oklab, var(--opt-color) 10%, white);
+    box-shadow: inset 0 0 0 1.5px var(--opt-color);
+  }
+  .opt:has(input:checked) .dot{background:var(--opt-color);border-color:var(--opt-color)}
+  .opt:has(input:checked) .dot::after{background:#fff;opacity:1;transform:scale(1)}
+  .opt:has(input:checked) .ico{opacity:1}
+
+  /* segmented two-up */
+  .yesno{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:560px}
+  @media (max-width:520px){.yesno{grid-template-columns:1fr}}
+
+  /* ===== chips (multi) ===== */
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin: 0 0 22px;max-width:880px}
+  .chips .chip-c{position:relative;cursor:pointer}
+  .chips .chip-c input{position:absolute;opacity:0;pointer-events:none}
+  .chips .chip-c span{
+    display:inline-block;
+    padding:9px 14px;border-radius:999px;
+    background:var(--field-bg);
+    color:var(--ink-2);font-size:14px;font-weight:500;
+    transition: background .15s, color .15s, transform .15s;
+    --chip-color: var(--c-current);
+  }
+  .chips .chip-c:hover span{background:#ececef;transform:translateY(-1px)}
+  .chips .chip-c input:checked + span{
+    background:var(--chip-color);color:#fff;
+  }
+
+  /* ===== buttons ===== */
+  .nav{
+    margin-top: auto;
+    padding-top: 32px;
+    display:flex;justify-content:space-between;align-items:center;
+    gap:12px;flex-wrap:wrap;
+  }
+  .hint{font-family:var(--sf-mono);font-size:11.5px;color:var(--muted);letter-spacing:.02em}
+  .hint .k{
+    display:inline-block;padding:1px 6px;border-radius:5px;
+    background:var(--field-bg);color:var(--ink);font-size:11px;
+    margin:0 2px;
+  }
+  .btn{
+    all:unset;cursor:pointer;
+    font-family:var(--sf);font-weight:500;font-size:15px;
+    padding: 12px 22px;border-radius:999px;
+    display:inline-flex;align-items:center;gap:8px;
+    transition: background .2s, transform .15s, box-shadow .2s, color .2s;
+    letter-spacing:-.005em;
+  }
+  .btn-primary{
+    background: var(--c-current); color:#fff;
+    box-shadow: 0 8px 20px -8px color-mix(in oklab, var(--c-current) 60%, transparent);
+  }
+  .btn-primary:hover{transform:translateY(-1px);filter:brightness(1.05)}
+  .btn-primary:active{transform:translateY(0)}
+  .btn-primary[disabled]{opacity:.4;cursor:not-allowed;box-shadow:none}
+  .btn-ghost{
+    background: var(--field-bg); color: var(--ink);
+  }
   .btn-ghost:hover{background:#ececef}
-  .btn-primary{background:var(--c2);color:#fff;box-shadow:0 6px 16px -8px color-mix(in oklab,var(--c2) 60%,transparent)}
-  .btn-primary:hover{filter:brightness(1.05);transform:translateY(-1px)}
-  .btn-danger{background:color-mix(in oklab,var(--c1) 12%,white);color:var(--c1)}
-  .btn-danger:hover{background:color-mix(in oklab,var(--c1) 20%,white)}
 
-  /* table */
-  .table-wrap{background:var(--surface);border:1px solid var(--rule);border-radius:22px;overflow:hidden;box-shadow:0 1px 0 rgba(0,0,0,.02),0 30px 80px -40px rgba(0,0,0,.18);}
-  table{width:100%;border-collapse:collapse;font-size:14px}
-  thead{background:#fafafb}
-  thead th{text-align:left;padding:14px 18px;font-weight:500;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--rule);white-space:nowrap;}
-  tbody td{padding:14px 18px;border-bottom:1px solid var(--rule);vertical-align:top;}
-  tbody tr:last-child td{border-bottom:0}
-  tbody tr:hover{background:#fafafb}
-  td .name{font-weight:600;font-size:15px;letter-spacing:-.01em}
-  td .ts{font-family:var(--sf-mono);font-size:11px;color:var(--muted);margin-top:2px}
-  td .pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:500;background:var(--pill-bg,var(--field-bg));color:var(--pill-color,var(--ink));}
-  td .pill .d{width:5px;height:5px;border-radius:50%;background:var(--pill-color,var(--ink))}
-  td .tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;}
-  td .tag{font-size:11px;padding:2px 7px;border-radius:999px;background:var(--field-bg);color:var(--ink-2);}
-  td .note{font-style:italic;font-size:12px;color:var(--muted);margin-top:4px;max-width:260px}
-  td .plus1-block{display:flex;flex-direction:column;gap:3px;padding:7px 10px;border-radius:10px;background:var(--field-bg);font-size:12px;color:var(--ink-2);}
-  td .plus1-block b{color:var(--ink);font-weight:500;font-size:12.5px}
-
-  .attend-both{--pill-bg:color-mix(in oklab,var(--c4) 14%,white);--pill-color:var(--c4)}
-  .attend-defense{--pill-bg:color-mix(in oklab,var(--c2) 14%,white);--pill-color:var(--c2)}
-  .attend-apero{--pill-bg:color-mix(in oklab,var(--c6) 14%,white);--pill-color:var(--c6)}
-  .attend-no{--pill-bg:color-mix(in oklab,var(--c1) 14%,white);--pill-color:var(--c1)}
-  .diet-omnivore{--pill-bg:color-mix(in oklab,var(--c8) 14%,white);--pill-color:var(--c8)}
-  .diet-vegetarian{--pill-bg:color-mix(in oklab,var(--c4) 14%,white);--pill-color:var(--c4)}
-  .diet-vegan{--pill-bg:color-mix(in oklab,var(--c7) 14%,white);--pill-color:var(--c7)}
-
-  /* empty / loading */
-  .empty{padding:72px 24px;text-align:center;}
-  .empty .icon{width:72px;height:72px;border-radius:50%;margin:0 auto 16px;background:var(--field-bg);display:grid;place-items:center;font-size:32px;}
-  .empty h3{font-size:20px;font-weight:600;margin:0 0 6px;letter-spacing:-.02em}
-  .empty p{font-size:14px;color:var(--muted);max-width:42ch;margin:0 auto;line-height:1.5}
-  .spinner{width:28px;height:28px;border-radius:50%;border:2.5px solid var(--rule);border-top-color:var(--c2);animation:spin .8s linear infinite;margin:0 auto 12px;}
-  @keyframes spin{to{transform:rotate(360deg)}}
-
-  @media(max-width:780px){
-    table,thead,tbody,tr,td,th{display:block}
-    thead{display:none}
-    tbody tr{padding:14px;border-bottom:1px solid var(--rule);}
-    tbody td{padding:5px 0;border:0;display:grid;grid-template-columns:90px 1fr;gap:8px;}
-    tbody td::before{content:attr(data-label);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);align-self:start;padding-top:2px;}
+  /* ===== done screen ===== */
+  .done{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+  @media (max-width:820px){.done{grid-template-columns:1fr}}
+  .gloss{
+    border-radius: 22px;height: 240px;position:relative;overflow:hidden;
+    background:
+      radial-gradient(60% 60% at 30% 30%, var(--c2), transparent 70%),
+      radial-gradient(50% 60% at 80% 70%, var(--c6), transparent 60%),
+      radial-gradient(70% 60% at 50% 100%, var(--c5), transparent 60%),
+      linear-gradient(135deg, var(--c7), var(--c2));
+    filter: saturate(1.1);
   }
+  .gloss .stamp{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    color:#fff;font-size:13px;letter-spacing:.18em;
+    padding:8px 16px;border-radius:999px;
+    background: rgba(255,255,255,.18);
+    -webkit-backdrop-filter: blur(8px);backdrop-filter: blur(8px);
+    border:1px solid rgba(255,255,255,.3);
+    text-transform:uppercase;font-weight:500;
+  }
+  .summary{
+    border-radius:18px;background:var(--field-bg);
+    overflow:hidden;
+  }
+  .summary .row{
+    display:grid;grid-template-columns: 140px 1fr;gap:10px;
+    padding: 14px 18px;border-top:1px solid rgba(0,0,0,.06);
+    font-size:14px;align-items:baseline;
+  }
+  .summary .row:first-child{border-top:0}
+  .summary .row .k{font-size:11.5px;color:var(--muted);font-weight:500;letter-spacing:.02em}
+  .summary .row .v{font-size:15px;color:var(--ink);font-weight:500}
+  .summary .row .v em{font-style:normal;color:var(--muted);font-weight:400;font-size:13px}
+
+  /* ===== footer ===== */
+  .foot{
+    display:flex;justify-content:space-between;align-items:center;
+    padding: 18px 6px 0;
+    font-size:12px;color:var(--muted);
+  }
+  .foot .dots{display:flex;gap:5px}
+  .foot .dots i{width:8px;height:8px;border-radius:50%}
+
+  /* ===== emergency donation card ===== */
+  .gift{
+    margin-top:28px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #fff5f5 0%, #ffe9e9 100%);
+    border: 1px solid #ffd4d4;
+    padding: 28px 32px;
+    display:grid;grid-template-columns: 80px 1fr auto;gap:24px;align-items:center;
+    position:relative;overflow:hidden;
+  }
+  @media (max-width: 720px){
+    .gift{grid-template-columns:1fr;text-align:left;padding:22px;gap:16px}
+  }
+  .gift::before{
+    content:"";position:absolute;right:-60px;top:-60px;
+    width:220px;height:220px;border-radius:50%;
+    background: radial-gradient(circle, #ffb4b4 0%, transparent 70%);
+    opacity:.5;
+  }
+  .gift .mark{
+    position:relative;z-index:1;
+    width:80px;height:80px;border-radius:50%;
+    background:#fff;border:4px solid #d63232;
+    display:grid;place-items:center;
+  }
+  .gift .mark svg{display:block}
+  .gift .body{position:relative;z-index:1}
+  .gift .body .tag{
+    display:inline-block;
+    font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+    color:#d63232;font-weight:600;
+    margin-bottom:6px;
+  }
+  .gift .body h3{
+    font-size:22px;font-weight:600;letter-spacing:-.02em;
+    margin:0 0 6px;color:var(--ink);line-height:1.2;
+  }
+  .gift .body p{
+    margin:0;font-size:14.5px;line-height:1.5;color:var(--ink-2);
+    max-width:54ch;
+  }
+  .gift .body p b{color:#d63232;font-weight:600}
+  .gift .cta{
+    position:relative;z-index:1;
+    display:inline-flex;align-items:center;gap:8px;
+    background:#d63232;color:#fff;
+    padding:14px 22px;border-radius:999px;
+    font-size:14px;font-weight:500;text-decoration:none;
+    box-shadow: 0 8px 20px -8px rgba(214,50,50,.6);
+    transition: transform .15s, filter .15s;
+    white-space:nowrap;
+  }
+  .gift .cta:hover{transform:translateY(-1px);filter:brightness(1.05)}
+
 </style>
 </head>
 <body>
+
+<div class="wash" id="wash"></div>
+
 <div class="shell">
 
+  <!-- ===== top bar ===== -->
   <header class="topbar">
     <div class="brand">
-      <span class="glyph">F</span>
-      <span>Francesco</span><span class="sep">·</span>
-      <span style="color:var(--ink-2);font-weight:400">RSVP admin</span>
+      <span class="glyph" id="brand-glyph">F</span>
+      <span>Francesco</span> <span class="sep">·</span> <span style="color:var(--ink-2);font-weight:400">PhD Defense RSVP</span>
     </div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <span class="chip" id="sourceChip">No data loaded</span>
-      <button class="btn btn-ghost" id="refreshBtn" style="padding:6px 12px;font-size:12px;display:none">↻ Refresh</button>
+    <div class="top-meta">
+      <span class="chip"><span class="live"></span>Live form</span>
+      <span class="chip" id="step-pill">Step 01 of 08</span>
     </div>
   </header>
 
-  <div class="header">
-    <h1>Your <em>guest list.</em></h1>
-    <p class="sub">Load responses from Web3Forms by importing the CSV from your dashboard.</p>
+  <!-- ===== rail ===== -->
+  <div class="rail-wrap">
+    <div class="rail" id="rail"></div>
   </div>
 
-  <!-- setup card -->
-  <div class="setup-card" id="setupCard">
-    <h2>Load your responses</h2>
-    <p>Import the CSV export from your Web3Forms dashboard.</p>
+  <!-- ===== stage ===== -->
+  <main class="stage">
+    <div class="stage-head">
+      <span class="step-meta"><span class="n" id="step-num">1</span><span id="step-name">You're invited</span></span>
+      <span id="step-of">01 / 08</span>
+    </div>
 
-    <!-- CSV import -->
-    <div>
-      <div class="note-box blue" style="margin-bottom:16px">
-        <b>How to get the CSV:</b> Go to <code>web3forms.com</code> → open your dashboard → click <code>Export CSV</code> → save the file → drag it below.
+    <!-- ====== SLIDE 0 — Invitation ====== -->
+    <section class="slide active" data-slide="0" data-color="var(--c2)" data-name="You're invited">
+      <h1 class="q">A defense. Then an <em>Apéro.</em></h1>
+      <p class="lede large">I'm defending my PhD on Wednesday, the 12th of August. You're warmly invited to the public defense — and, if you can stay, the Apéro afterwards. A short RSVP follows.</p>
+
+      <div class="hero" style="grid-template-columns:1fr;max-width:560px">
+        <aside class="save-card">
+          <span class="layer" style="width: 900px; height: 436px"></span>
+          <span class="label">Save the date</span>
+          <div class="month">Aug 12<span class="sub" style="font-size: 30px">Wednesday · 2026</span></div>
+
+          <div class="events">
+            <div class="ev">
+              <div class="t">13:30</div>
+              <div class="n">PhD Defense<small>ETH Hönggerberg · HPL D 32</small><a class="maplink" href="https://maps.app.goo.gl/wZADjLsFvori9F2K9" target="_blank" rel="noopener">View on map ↗</a></div>
+              <div class="tag">Public</div>
+            </div>
+            <div class="ev">
+              <div class="t">16:00</div>
+              <div class="n">Apéro<small>HPF G 6 · drinks &amp; bites</small><a class="maplink" href="https://maps.app.goo.gl/vSEwu5GhHkZi9jnCA" target="_blank" rel="noopener">View on map ↗</a></div>
+              <div class="tag">RSVP</div>
+            </div>
+          </div>
+        </aside>
       </div>
-      <div id="dropZone" style="border:2px dashed var(--rule);border-radius:16px;padding:40px 24px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;">
-        <div style="font-size:28px;margin-bottom:8px">📂</div>
-        <div style="font-size:15px;font-weight:500;margin-bottom:4px">Drop CSV here</div>
-        <div style="font-size:13px;color:var(--muted)">or <label for="csvInput" style="color:var(--c2);cursor:pointer;text-decoration:underline">browse to select</label></div>
-        <input type="file" id="csvInput" accept=".csv" style="display:none"/>
+
+      <div class="nav">
+        <span class="hint">Press <span class="k">Enter</span> to begin · takes about a minute</span>
+        <button class="btn btn-primary" data-next>Start RSVP →</button>
       </div>
-    </div>
-  </div>
+    </section>
 
-  <!-- stats -->
-  <div class="stats" id="stats" style="display:none"></div>
+    <!-- ====== SLIDE 1 — Name ====== -->
+    <section class="slide" data-slide="1" data-color="var(--c2)" data-name="Your name">
+      <h1 class="q">What's your <em>full name?</em></h1>
+      <p class="lede">As you'd like it on your seating card.</p>
 
-  <!-- toolbar -->
-  <div class="toolbar" id="toolbar" style="display:none">
-    <label class="search">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--muted);flex-shrink:0"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input id="searchInput" type="text" placeholder="Search by name…"/>
-    </label>
-    <div class="actions">
-      <button class="btn btn-ghost" id="copyJsonBtn">⧉ Copy JSON</button>
-      <button class="btn btn-primary" id="exportCsvBtn">↓ Export CSV</button>
-    </div>
-  </div>
+      <div class="field">
+        <input class="input" id="f-name" type="text" placeholder="Type your name…" data-required autocomplete="name" />
+      </div>
 
-  <!-- table -->
-  <div class="table-wrap" id="tableWrap">
-    <div class="empty">
-      <div class="icon">👋</div>
-      <h3>No data yet</h3>
-      <p>Load your responses using the panel above.</p>
+      <div class="nav">
+        <span class="hint"><span class="k">↵</span> continue · <span class="k">⇧↵</span> back</span>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-ghost" data-prev>← Back</button>
+          <button class="btn btn-primary" data-next>Continue →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== SLIDE 2 — Attending? ====== -->
+    <section class="slide" data-slide="2" data-color="var(--c5)" data-name="Attendance">
+      <h1 class="q">Will you <em>join us?</em></h1>
+      <p class="lede">Both, either, or — sadly — neither.</p>
+
+      <div class="cards">
+        <label class="opt" style="--opt-color:var(--c4)">
+          <input type="radio" name="attend" value="both" data-required />
+          <span class="dot"></span>
+          <span class="ico">✓</span>
+          <div class="ttl">Yes — both</div>
+          <div class="sub">Defense at 13:30, Apéro after.</div>
+        </label>
+        <label class="opt" style="--opt-color:var(--c2)">
+          <input type="radio" name="attend" value="defense" />
+          <span class="dot"></span>
+          <span class="ico">①</span>
+          <div class="ttl">Only the defense</div>
+          <div class="sub">I'll be there for the talk.</div>
+        </label>
+        <label class="opt" style="--opt-color:var(--c6)">
+          <input type="radio" name="attend" value="apero" />
+          <span class="dot"></span>
+          <span class="ico">②</span>
+          <div class="ttl">Only the Apéro</div>
+          <div class="sub">See you at HPF G6 around four.</div>
+        </label>
+        <label class="opt" style="--opt-color:var(--c1)">
+          <input type="radio" name="attend" value="no" />
+          <span class="dot"></span>
+          <span class="ico">✕</span>
+          <div class="ttl">Can't make it</div>
+          <div class="sub">Sending good thoughts from afar.</div>
+        </label>
+      </div>
+
+      <div class="nav">
+        <span class="hint">Pick one to continue</span>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-ghost" data-prev>← Back</button>
+          <button class="btn btn-primary" id="attendBtn">Continue →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== SLIDE 3 — Dietary ====== -->
+    <section class="slide" data-slide="3" data-color="var(--c4)" data-name="Dietary">
+      <h1 class="q">Any <em>dietary preference?</em></h1>
+      <p class="lede">Helps us order the right ratio of grain to greens.</p>
+
+      <div class="cards">
+        <label class="opt" style="--opt-color:var(--c8)">
+          <input type="radio" name="diet" value="omnivore" data-required />
+          <span class="dot"></span>
+          <span class="ico">All</span>
+          <div class="ttl">No preference</div>
+          <div class="sub">I'll eat most things.</div>
+        </label>
+        <label class="opt" style="--opt-color:var(--c4)">
+          <input type="radio" name="diet" value="vegetarian" />
+          <span class="dot"></span>
+          <span class="ico">Veg</span>
+          <div class="ttl">Vegetarian</div>
+          <div class="sub">No meat or fish.</div>
+        </label>
+        <label class="opt" style="--opt-color:var(--c7)">
+          <input type="radio" name="diet" value="vegan" />
+          <span class="dot"></span>
+          <span class="ico">Vgn</span>
+          <div class="ttl">Vegan</div>
+          <div class="sub">No animal products.</div>
+        </label>
+      </div>
+
+      <div class="nav">
+        <span class="hint">Pick one to continue</span>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-ghost" data-prev>← Back</button>
+          <button class="btn btn-primary" data-next>Continue →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== SLIDE 4 — Allergies ====== -->
+    <section class="slide" data-slide="4" data-color="var(--c3)" data-name="Allergies">
+      <h1 class="q">Any <em>allergies?</em></h1>
+      <p class="lede">Tap anything that applies. Add details below if it's important.</p>
+
+      <span class="lbl">Common allergens</span>
+      <div class="chips">
+        <label class="chip-c" style="--chip-color:var(--c8)"><input type="checkbox" name="allergy" value="gluten"/><span>Gluten</span></label>
+        <label class="chip-c" style="--chip-color:var(--c3)"><input type="checkbox" name="allergy" value="lactose"/><span>Lactose / dairy</span></label>
+        <label class="chip-c" style="--chip-color:var(--c4)"><input type="checkbox" name="allergy" value="nuts"/><span>Tree nuts</span></label>
+        <label class="chip-c" style="--chip-color:var(--c1)"><input type="checkbox" name="allergy" value="peanuts"/><span>Peanuts</span></label>
+        <label class="chip-c" style="--chip-color:var(--c6)"><input type="checkbox" name="allergy" value="eggs"/><span>Eggs</span></label>
+        <label class="chip-c" style="--chip-color:var(--c2)"><input type="checkbox" name="allergy" value="shellfish"/><span>Shellfish</span></label>
+        <label class="chip-c" style="--chip-color:var(--c7)"><input type="checkbox" name="allergy" value="soy"/><span>Soy</span></label>
+        <label class="chip-c" style="--chip-color:var(--c5)"><input type="checkbox" name="allergy" value="sesame"/><span>Sesame</span></label>
+        <label class="chip-c" style="--chip-color:var(--c1)"><input type="checkbox" name="allergy" value="alcohol"/><span>No alcohol</span></label>
+      </div>
+
+      <div class="field">
+        <span class="lbl">Anything else? (optional)</span>
+        <textarea class="textarea" id="f-allergy-notes" placeholder="E.g. 'mild fructose intolerance', 'severe peanut allergy — EpiPen', 'just no licorice'."></textarea>
+      </div>
+
+      <div class="nav">
+        <span class="hint">Skip if none</span>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-ghost" data-prev>← Back</button>
+          <button class="btn btn-primary" data-next>Continue →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== SLIDE 5 — Plus one? ====== -->
+    <section class="slide" data-slide="5" data-color="var(--c6)" data-name="Plus one" id="slide-plus1">
+      <h1 class="q">Bringing a <em>+1?</em></h1>
+      <p class="lede">Partners, friends, supportive houseplants — all welcome at the Apéro.</p>
+
+      <div class="yesno">
+        <label class="opt" style="--opt-color:var(--c6)">
+          <input type="radio" name="plus1" value="yes" data-required />
+          <span class="dot"></span>
+          <span class="ico">+1</span>
+          <div class="ttl">Yes, I'll bring someone</div>
+          <div class="sub">Two more quick questions follow.</div>
+        </label>
+        <label class="opt" style="--opt-color:var(--c1)">
+          <input type="radio" name="plus1" value="no" />
+          <span class="dot"></span>
+          <span class="ico">—</span>
+          <div class="ttl">No, just me</div>
+          <div class="sub">We'll skip ahead to the end.</div>
+        </label>
+      </div>
+
+      <div class="nav">
+        <span class="hint">Pick one to continue</span>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-ghost" data-prev>← Back</button>
+          <button class="btn btn-primary" id="plus1Btn">Continue →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== SLIDE 6 — +1 Dietary ====== -->
+    <section class="slide" data-slide="6" data-color="var(--c7)" data-name="+1 dietary">
+      <h1 class="q">Does your <em>+1</em> follow a diet?</h1>
+      <p class="lede">Same options as before — just for them.</p>
+
+      <div class="cards">
+        <label class="opt" style="--opt-color:var(--c8)">
+          <input type="radio" name="diet1" value="omnivore" />
+          <span class="dot"></span>
+          <span class="ico">All</span>
+          <div class="ttl">No preference</div>
+          <div class="sub">They'll eat most things.</div>
+        </label>
+        <label class="opt" style="--opt-color:var(--c4)">
+          <input type="radio" name="diet1" value="vegetarian" />
+          <span class="dot"></span>
+          <span class="ico">Veg</span>
+          <div class="ttl">Vegetarian</div>
+          <div class="sub">No meat or fish.</div>
+        </label>
+        <label class="opt" style="--opt-color:var(--c7)">
+          <input type="radio" name="diet1" value="vegan" />
+          <span class="dot"></span>
+          <span class="ico">Vgn</span>
+          <div class="ttl">Vegan</div>
+          <div class="sub">No animal products.</div>
+        </label>
+      </div>
+
+      <div class="nav">
+        <span class="hint">Pick one to continue</span>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-ghost" data-prev>← Back</button>
+          <button class="btn btn-primary" data-next>Continue →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== SLIDE 7 — +1 Allergies ====== -->
+    <section class="slide" data-slide="7" data-color="var(--c8)" data-name="+1 allergies">
+      <h1 class="q">And any <em>allergies</em> for your +1?</h1>
+      <p class="lede">Last question — then you're done.</p>
+
+      <span class="lbl">Common allergens</span>
+      <div class="chips">
+        <label class="chip-c" style="--chip-color:var(--c8)"><input type="checkbox" name="allergy1" value="gluten"/><span>Gluten</span></label>
+        <label class="chip-c" style="--chip-color:var(--c3)"><input type="checkbox" name="allergy1" value="lactose"/><span>Lactose / dairy</span></label>
+        <label class="chip-c" style="--chip-color:var(--c4)"><input type="checkbox" name="allergy1" value="nuts"/><span>Tree nuts</span></label>
+        <label class="chip-c" style="--chip-color:var(--c1)"><input type="checkbox" name="allergy1" value="peanuts"/><span>Peanuts</span></label>
+        <label class="chip-c" style="--chip-color:var(--c6)"><input type="checkbox" name="allergy1" value="eggs"/><span>Eggs</span></label>
+        <label class="chip-c" style="--chip-color:var(--c2)"><input type="checkbox" name="allergy1" value="shellfish"/><span>Shellfish</span></label>
+        <label class="chip-c" style="--chip-color:var(--c7)"><input type="checkbox" name="allergy1" value="soy"/><span>Soy</span></label>
+        <label class="chip-c" style="--chip-color:var(--c5)"><input type="checkbox" name="allergy1" value="sesame"/><span>Sesame</span></label>
+        <label class="chip-c" style="--chip-color:var(--c1)"><input type="checkbox" name="allergy1" value="alcohol"/><span>No alcohol</span></label>
+      </div>
+
+      <div class="field">
+        <span class="lbl">Notes for the kitchen (optional)</span>
+        <textarea class="textarea" id="f-allergy1-notes" placeholder="Anything else the kitchen should know."></textarea>
+      </div>
+
+      <div class="nav">
+        <span class="hint">All set</span>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-ghost" data-prev>← Back</button>
+          <button class="btn btn-primary" data-submit>Send RSVP ↗</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== SLIDE 8 — Done ====== -->
+    <section class="slide" data-slide="8" data-color="var(--c4)" data-name="Complete">
+      <h1 class="q">See you on <em>August 12.</em></h1>
+      <p class="lede">Francesco's been notified. If anything changes, just resubmit this form and we'll take the latest answer.</p>
+
+      <div class="done" style="grid-template-columns:1fr">
+        <div>
+          <div class="summary" id="summary"></div>
+        </div>
+      </div>
+
+      <aside class="gift">
+        <div class="mark" aria-hidden="true">
+          <svg width="40" height="40" viewBox="0 0 40 40">
+            <rect x="8" y="11" width="24" height="4.5" fill="#d63232"/>
+            <rect x="8" y="24.5" width="24" height="4.5" fill="#d63232"/>
+          </svg>
+        </div>
+        <div class="body">
+          <span class="tag">A small favour from me</span>
+          <h3>Skip the gift — donate instead.</h3>
+          <p>Honestly, your presence is the best gift I could ask for. If you'd still like to mark the occasion, please send what you can to <b>Emergency</b>, the Italian NGO that provides free medical care in war zones and forgotten places. It would mean a lot to me. Thank you ♥</p>
+        </div>
+        <a class="cta" href="https://insieme.emergency.it/fundraisers/francesco-adinolfi?utm_campaign=emergency-ong-ets&amp;utm_content=new_action&amp;utm_medium=email-auto&amp;utm_source=kentaa" target="_blank" rel="noopener">Donate →</a>
+      </aside>
+
+      <div class="nav">
+        <span></span>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-ghost" data-restart>↺ Start over</button>
+          <a class="btn btn-primary" href="#" id="ical-link">Add to calendar →</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== footer ===== -->
+  <footer class="foot">
+    <span>© 2026 · A defense by Francesco · ETH Zürich</span>
+    <div class="dots">
+      <i style="background:var(--c1)"></i><i style="background:var(--c2)"></i><i style="background:var(--c3)"></i>
+      <i style="background:var(--c4)"></i><i style="background:var(--c5)"></i><i style="background:var(--c6)"></i>
+      <i style="background:var(--c7)"></i><i style="background:var(--c8)"></i>
     </div>
-  </div>
+    <span>RSVP closes Aug 1</span>
+  </footer>
 
 </div>
+
 <script>
-const ATT = {both:'Defense + Apéro', defense:'Defense only', apero:'Apéro only', no:'Not attending'};
-const DIET = {omnivore:'No preference', vegetarian:'Vegetarian', vegan:'Vegan'};
+(function(){
+  const WEB3FORMS_KEY = '4b1d6494-01fa-44b1-bca6-e26894f7c3b8';
 
-let rsvps = [];
-let filtered = [];
+  const slides = [...document.querySelectorAll('.slide')];
+  const TOTAL = 8;
+  let current = 0, maxReached = 0;
 
-// ── CSV import ─────────────────────────────────────────────────
-const dropZone = document.getElementById('dropZone');
-const csvInput = document.getElementById('csvInput');
+  const COLORS = ['var(--c2)','var(--c2)','var(--c5)','var(--c4)','var(--c3)','var(--c6)','var(--c7)','var(--c8)'];
 
-dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.borderColor = 'var(--c2)'; dropZone.style.background = 'color-mix(in oklab,var(--c2) 6%,white)'; });
-dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = ''; dropZone.style.background = ''; });
-dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.style.borderColor=''; dropZone.style.background=''; if (e.dataTransfer.files[0]) handleCSV(e.dataTransfer.files[0]); });
-csvInput.addEventListener('change', () => { if (csvInput.files[0]) handleCSV(csvInput.files[0]); });
-dropZone.addEventListener('click', () => csvInput.click());
+  // build rail
+  const rail = document.getElementById('rail');
+  for (let i=0;i<TOTAL;i++){
+    const s = document.createElement('div');
+    s.className='seg';
+    s.style.setProperty('--seg-color', COLORS[i]);
+    s.addEventListener('click', ()=>{ if (i<=maxReached) go(i); });
+    rail.appendChild(s);
+  }
 
-function handleCSV(file) {
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      rsvps = dedupByName(parseCSV(e.target.result));
-      setSource('Web3Forms CSV · ' + rsvps.length + ' responses', false);
-      showData();
-    } catch(err) {
-      alert('Could not parse CSV: ' + err.message);
+  function applyColor(c){
+    document.documentElement.style.setProperty('--c-current', c);
+  }
+
+  function setUI(){
+    document.querySelectorAll('#rail .seg').forEach((s,i)=>{
+      s.classList.toggle('active', i===current);
+      s.classList.toggle('done', i<current);
+      s.classList.toggle('locked', i>maxReached);
+    });
+    const cur = slides[current];
+    document.getElementById('step-num').textContent = current>=TOTAL ? '✓' : (current+1);
+    document.getElementById('step-name').textContent = cur.dataset.name || '';
+    document.getElementById('step-of').textContent = current>=TOTAL
+      ? 'Complete'
+      : String(current+1).padStart(2,'0') + ' / 08';
+    document.getElementById('step-pill').textContent = current>=TOTAL
+      ? '✓ Complete'
+      : `Step ${String(current+1).padStart(2,'0')} of 08`;
+  }
+
+  function go(i){
+    if (i<0) return;
+    const plus1 = (document.querySelector('input[name="plus1"]:checked')||{}).value;
+    if (plus1==='no' && (i===6 || i===7)) i = i>current ? 8 : 5;
+
+    slides[current]?.classList.remove('active');
+    current = i;
+    maxReached = Math.max(maxReached, current);
+    slides[current]?.classList.add('active');
+    applyColor(slides[current].dataset.color || 'var(--c2)');
+    setUI();
+    const first = slides[current].querySelector('input[type="text"], textarea');
+    setTimeout(()=>first && first.focus({preventScroll:true}), 60);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  function validate(slideEl){
+    const req = slideEl.querySelectorAll('[data-required]');
+    for (const el of req){
+      if (el.type==='radio'){
+        if (!slideEl.querySelector(`input[name="${el.name}"]:checked`)){
+          el.closest('.cards, .yesno')?.animate(
+            [{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'none'}],
+            {duration:240}
+          );
+          return false;
+        }
+      } else if (!el.value.trim()){
+        el.focus();
+        el.animate(
+          [{boxShadow:'0 0 0 0 rgba(255,59,48,0)'},{boxShadow:'0 0 0 6px color-mix(in oklab, var(--c-current) 30%, transparent)'},{boxShadow:'0 0 0 0 rgba(255,59,48,0)'}],
+          {duration:520}
+        );
+        return false;
+      }
     }
-  };
-  reader.readAsText(file);
-}
-
-function parseCSV(text) {
-  const lines = text.trim().split('\n');
-  if (lines.length < 2) return [];
-  const headers = splitCSVLine(lines[0]).map(h => h.toLowerCase().trim());
-  return lines.slice(1).filter(l => l.trim()).map(line => {
-    const vals = splitCSVLine(line);
-    const obj = {};
-    headers.forEach((h, i) => obj[h] = (vals[i] || '').trim());
-    return normaliseCsvRow(obj);
-  });
-}
-
-function splitCSVLine(line) {
-  const result = []; let cur = ''; let inQ = false;
-  for (let i = 0; i < line.length; i++) {
-    const c = line[i];
-    if (c === '"') { inQ = !inQ; }
-    else if (c === ',' && !inQ) { result.push(cur); cur = ''; }
-    else { cur += c; }
+    return true;
   }
-  result.push(cur);
-  return result;
-}
 
-// Map Web3Forms CSV columns → our internal format
-// Web3Forms exports field names exactly as submitted, plus a "date" column
-function normaliseCsvRow(r) {
-  return {
-    name:          r['name'] || '—',
-    attend:        r['attending'] || r['attend'] || '',
-    diet:          r['diet'] || '',
-    allergies:     r['allergies'] || '',
-    allergyNotes:  r['allergy_notes'] || r['allergy notes'] || '',
-    plus1:         r['plus_one'] || r['plus 1'] || r['plus1'] || 'no',
-    diet1:         r['plus_one_diet'] || r['plus 1 diet'] || '',
-    allergies1:    r['plus_one_allergies'] || r['plus 1 allergies'] || '',
-    allergy1Notes: r['plus_one_allergy_notes'] || r['plus 1 notes'] || '',
-    submittedAt:   r['date'] || r['submitted_at'] || r['_date'] || '',
-  };
-}
-
-// ── Dedup: keep last entry per name ───────────────────────────
-function dedupByName(arr) {
-  // Sort by date ascending so later submissions overwrite earlier ones
-  const sorted = [...arr].sort((a, b) => {
-    const da = a.submittedAt ? new Date(a.submittedAt) : 0;
-    const db = b.submittedAt ? new Date(b.submittedAt) : 0;
-    return da - db;
+  document.querySelectorAll('[data-next]').forEach(b=>{
+    b.addEventListener('click', ()=>{ if (!validate(slides[current])) return; go(current+1); });
   });
-  const map = new Map();
-  sorted.forEach(r => {
-    const key = (r.name || '').toLowerCase().trim().replace(/\s+/g, ' ');
-    map.set(key, r); // last (most recent) entry wins
+  document.querySelectorAll('[data-prev]').forEach(b=>{
+    b.addEventListener('click', ()=>go(current-1));
   });
-  return Array.from(map.values());
-}
 
-// ── Rendering ──────────────────────────────────────────────────
-function setSource(label, showRefresh) {
-  document.getElementById('sourceChip').textContent = label;
-  document.getElementById('refreshBtn').style.display = showRefresh ? '' : 'none';
-}
+  // Slide 2 (Attendance): if "can't make it" skip straight to submit, otherwise continue
+  document.getElementById('attendBtn').addEventListener('click', async ()=>{
+    if (!validate(slides[current])) return;
+    const attend = (document.querySelector('input[name="attend"]:checked')||{}).value;
+    if (attend === 'no') {
+      await submitToFormspree(document.getElementById('attendBtn'));
+    } else {
+      go(current + 1);
+    }
+  });
 
-function showData() {
-  document.getElementById('setupCard').style.display = 'none';
-  document.getElementById('stats').style.display = '';
-  document.getElementById('toolbar').style.display = '';
-  applyFilter();
-  renderStats();
-}
+  // Slide 5 (Plus one): if "no" submit directly, if "yes" continue to +1 diet
+  document.getElementById('plus1Btn').addEventListener('click', async ()=>{
+    if (!validate(slides[current])) return;
+    const plus1 = (document.querySelector('input[name="plus1"]:checked')||{}).value;
+    if (plus1 === 'yes') {
+      go(current + 1);
+    } else {
+      await submitToFormspree(document.getElementById('plus1Btn'));
+    }
+  });
 
-function renderStats() {
-  const total = rsvps.length;
-  const attending = rsvps.filter(r => r.attend && r.attend !== 'no').length;
-  const plus1s = rsvps.filter(r => r.plus1 === 'yes' || r.plus1 === 'Yes').length;
-  const aperoCount = rsvps.filter(r => r.attend === 'both' || r.attend === 'apero').length;
-  const mouths = rsvps.filter(r => r.attend === 'both' || r.attend === 'apero')
-    .reduce((n, r) => n + 1 + ((r.plus1 === 'yes' || r.plus1 === 'Yes') ? 1 : 0), 0);
-  const diets = rsvps.reduce((m,r) => { if (r.diet) m[r.diet.toLowerCase()]=(m[r.diet.toLowerCase()]||0)+1; return m; }, {});
-  const allergyCount = rsvps.filter(r => r.allergies && r.allergies !== 'none' && r.allergies !== '').length;
+  // Slide 7 (+1 allergies): final submit for guests with a +1
+  document.querySelector('[data-submit]').addEventListener('click', async ()=>{
+    if (!validate(slides[current])) return;
+    await submitToFormspree(document.querySelector('[data-submit]'));
+  });
 
-  const stats = [
-    {k:'Total replies', v:total, s:'rsvp\'d so far', c:'var(--c2)'},
-    {k:'Attending', v:attending, s:'+' + plus1s + ' plus-ones', c:'var(--c4)'},
-    {k:'At the Apéro', v:mouths, s:'mouths to feed', c:'var(--c6)'},
-    {k:'Veggie / Vegan', v:(diets['vegetarian']||0)+(diets['vegan']||0), s:(diets['vegan']||0)+' vegan', c:'var(--c7)'},
-    {k:'Allergies flagged', v:allergyCount, s:'guests with restrictions', c:'var(--c8)'},
-  ];
-  document.getElementById('stats').innerHTML = stats.map(s =>
-    '<div class="stat" style="--stat-color:' + s.c + '">' +
-    '<span class="k">' + s.k + '</span>' +
-    '<span class="v">' + s.v + '</span>' +
-    '<span class="s">' + s.s + '</span></div>'
-  ).join('');
-}
+  async function submitToFormspree(btn) {
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
 
-function attendClass(v) {
-  const map = {both:'attend-both', defense:'attend-defense', apero:'attend-apero', no:'attend-no'};
-  return map[(v||'').toLowerCase()] || '';
-}
-function dietClass(v) {
-  const map = {omnivore:'diet-omnivore', vegetarian:'diet-vegetarian', vegan:'diet-vegan', 'no preference':'diet-omnivore'};
-  return map[(v||'').toLowerCase()] || 'diet-omnivore';
-}
-function attendLabel(v) { return ATT[(v||'').toLowerCase()] || v || '—'; }
-function dietLabel(v) { return DIET[(v||'').toLowerCase()] || v || '—'; }
+    const entry = collectRSVP();
+    const formData = new FormData();
+    formData.append('access_key', WEB3FORMS_KEY);
+    Object.entries(entry).forEach(([k, v]) => formData.append(k, Array.isArray(v) ? v.join(', ') : v));
 
-function fmtTime(iso) {
-  if (!iso) return '—';
-  try {
-    const d = new Date(iso);
-    return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'}) + ' · ' + d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-  } catch(e) { return iso; }
-}
-
-function esc(s) { return String(s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-
-function allergyChips(str) {
-  if (!str || str === 'none') return '<span style="color:var(--muted);font-size:13px">none</span>';
-  return '<div class="tags">' + str.split(/[,;]+/).filter(Boolean).map(a => '<span class="tag">' + esc(a.trim()) + '</span>').join('') + '</div>';
-}
-
-function renderTable() {
-  const wrap = document.getElementById('tableWrap');
-  if (!filtered.length) {
-    wrap.innerHTML = '<div class="empty"><div class="icon">◌</div><h3>' + (rsvps.length ? 'No matches' : 'No replies yet') + '</h3><p>' + (rsvps.length ? 'Try a different search.' : 'Responses will appear here once loaded.') + '</p></div>';
-    return;
+    try {
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Accept': 'application/json' },
+        body: formData
+      });
+      console.log('Formspree status:', res.status);
+      const json = await res.json().catch(() => ({}));
+      console.log('Formspree response:', json);
+      if (!res.ok) throw new Error(json.error || 'HTTP ' + res.status);
+      buildSummary();
+      go(8);
+    } catch(err) {
+      console.error('Submission error:', err);
+      btn.disabled = false;
+      btn.textContent = originalText;
+      alert('Something went wrong: ' + err.message + '\n\nCheck the browser console for details.');
+    }
   }
-  const rows = filtered.map(r => {
-    const hasPlus1 = r.plus1 === 'yes' || r.plus1 === 'Yes';
-    const plus1Block = hasPlus1
-      ? '<div class="plus1-block"><b>+1 guest</b>' +
-        '<span class="pill ' + dietClass(r.diet1) + '"><span class="d"></span>' + esc(dietLabel(r.diet1)) + '</span>' +
-        allergyChips(r.allergies1) +
-        (r.allergy1Notes ? '<div class="note">"' + esc(r.allergy1Notes) + '"</div>' : '') +
-        '</div>'
-      : '<span style="color:var(--muted);font-size:13px">—</span>';
+  document.querySelector('[data-restart]').addEventListener('click', ()=>location.reload());
 
-    return '<tr>' +
-      '<td data-label="Guest"><div class="name">' + esc(r.name) + '</div><div class="ts">' + fmtTime(r.submittedAt) + '</div></td>' +
-      '<td data-label="Attending"><span class="pill ' + attendClass(r.attend) + '"><span class="d"></span>' + esc(attendLabel(r.attend)) + '</span></td>' +
-      '<td data-label="Diet"><span class="pill ' + dietClass(r.diet) + '"><span class="d"></span>' + esc(dietLabel(r.diet)) + '</span></td>' +
-      '<td data-label="Allergies">' + allergyChips(r.allergies) + (r.allergyNotes ? '<div class="note">"' + esc(r.allergyNotes) + '"</div>' : '') + '</td>' +
-      '<td data-label="+1">' + plus1Block + '</td>' +
-      '</tr>';
-  }).join('');
+  function collectRSVP(){
+    return {
+      name: document.getElementById('f-name').value.trim(),
+      attend: (document.querySelector('input[name="attend"]:checked')||{}).value || null,
+      diet:   (document.querySelector('input[name="diet"]:checked')||{}).value || null,
+      allergies: [...document.querySelectorAll('input[name="allergy"]:checked')].map(e=>e.value),
+      allergyNotes: document.getElementById('f-allergy-notes').value.trim(),
+      plus1:  (document.querySelector('input[name="plus1"]:checked')||{}).value || 'no',
+      diet1:  (document.querySelector('input[name="diet1"]:checked')||{}).value || null,
+      allergies1: [...document.querySelectorAll('input[name="allergy1"]:checked')].map(e=>e.value),
+      allergy1Notes: document.getElementById('f-allergy1-notes').value.trim(),
+      submittedAt: new Date().toISOString(),
+    };
+  }
 
-  wrap.innerHTML = '<table><thead><tr>' +
-    '<th>Guest</th><th>Attending</th><th>Diet</th><th>Allergies</th><th>+1</th>' +
-    '</tr></thead><tbody>' + rows + '</tbody></table>';
-}
 
-function applyFilter() {
-  const q = document.getElementById('searchInput').value.trim().toLowerCase();
-  filtered = q ? rsvps.filter(r => (r.name||'').toLowerCase().includes(q)) : rsvps;
-  renderTable();
-}
+  function buildSummary(){
+    const name = document.getElementById('f-name').value || '—';
+    const attend = (document.querySelector('input[name="attend"]:checked')||{}).value || '—';
+    const diet = (document.querySelector('input[name="diet"]:checked')||{}).value || '—';
+    const allergies = [...document.querySelectorAll('input[name="allergy"]:checked')].map(e=>e.value);
+    const allergyNotes = document.getElementById('f-allergy-notes').value;
+    const plus1 = (document.querySelector('input[name="plus1"]:checked')||{}).value || 'no';
+    const diet1 = (document.querySelector('input[name="diet1"]:checked')||{}).value;
+    const allergies1 = [...document.querySelectorAll('input[name="allergy1"]:checked')].map(e=>e.value);
+    const allergy1Notes = document.getElementById('f-allergy1-notes').value;
 
-document.getElementById('searchInput').addEventListener('input', applyFilter);
+    const ATT = {both:'Defense + Apéro', defense:'Defense only', apero:'Apéro only', no:'Cannot attend'};
+    const DIET = {omnivore:'No preference', vegetarian:'Vegetarian', vegan:'Vegan'};
 
-// ── Export ─────────────────────────────────────────────────────
-document.getElementById('copyJsonBtn').addEventListener('click', async () => {
-  try {
-    await navigator.clipboard.writeText(JSON.stringify(rsvps, null, 2));
-    const btn = document.getElementById('copyJsonBtn');
-    const old = btn.textContent; btn.textContent = '✓ Copied';
-    setTimeout(() => btn.textContent = old, 1500);
-  } catch(e) { alert('Copy failed'); }
-});
+    const rows = [];
+    rows.push(['Guest', escapeHtml(name)]);
+    rows.push(['Attending', ATT[attend] || '—']);
+    rows.push(['Dietary', DIET[diet] || '—']);
+    rows.push(['Allergies',
+      (allergies.length ? allergies.join(', ') : '<em>none listed</em>') +
+      (allergyNotes ? ` <em>· "${escapeHtml(allergyNotes)}"</em>` : '')]);
+    if (plus1==='yes'){
+      rows.push(['+1', 'Yes']);
+      rows.push(['+1 diet', DIET[diet1] || '<em>—</em>']);
+      rows.push(['+1 allergies',
+        (allergies1.length ? allergies1.join(', ') : '<em>none listed</em>') +
+        (allergy1Notes ? ` <em>· "${escapeHtml(allergy1Notes)}"</em>` : '')]);
+    } else {
+      rows.push(['+1', '<em>none</em>']);
+    }
+    document.getElementById('summary').innerHTML = rows.map(([k,v])=>(
+      `<div class="row"><div class="k">${k}</div><div class="v">${v}</div></div>`
+    )).join('');
+  }
+  function escapeHtml(s){
+    return (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  }
 
-document.getElementById('exportCsvBtn').addEventListener('click', () => {
-  const headers = ['Name','Submitted','Attending','Diet','Allergies','Allergy notes','Plus 1','Plus 1 diet','Plus 1 allergies','Plus 1 notes'];
-  const rows = rsvps.map(r => [
-    r.name, r.submittedAt,
-    attendLabel(r.attend), dietLabel(r.diet),
-    r.allergies || '', r.allergyNotes || '',
-    (r.plus1 === 'yes' || r.plus1 === 'Yes') ? 'Yes' : 'No',
-    (r.plus1 === 'yes' || r.plus1 === 'Yes') ? dietLabel(r.diet1) : '',
-    (r.plus1 === 'yes' || r.plus1 === 'Yes') ? (r.allergies1 || '') : '',
-    (r.plus1 === 'yes' || r.plus1 === 'Yes') ? (r.allergy1Notes || '') : '',
-  ]);
-  const csv = [headers, ...rows].map(row =>
-    row.map(cell => { const s = String(cell||''); return /[,"\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s; }).join(',')
-  ).join('\n');
-  const blob = new Blob([csv], {type:'text/csv'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href=url; a.download='francesco-rsvps.csv'; a.click();
-  URL.revokeObjectURL(url);
-});
+  document.addEventListener('keydown', e=>{
+    if (e.key==='Enter' && !e.shiftKey){
+      const tag = (e.target.tagName||'').toLowerCase();
+      if (tag==='textarea') return;
+      e.preventDefault();
+      const next = slides[current].querySelector('[data-next], [data-submit]');
+      next?.click();
+    } else if (e.key==='Enter' && e.shiftKey){
+      e.preventDefault();
+      const prev = slides[current].querySelector('[data-prev]');
+      prev?.click();
+    }
+  });
+
+  document.getElementById('ical-link').addEventListener('click', e=>{
+    e.preventDefault();
+    const ics = [
+      'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Francesco//RSVP//EN',
+      'BEGIN:VEVENT',
+      'UID:fm-defense-2026@eth',
+      'DTSTAMP:20260522T000000Z',
+      'DTSTART:20260812T113000Z',
+      'DTEND:20260812T140000Z',
+      'SUMMARY:Francesco\'s PhD Defense',
+      'LOCATION:ETH Hönggerberg, HPL D 32',
+      'DESCRIPTION:Public defense followed by apéro at HPF G6 (16:00).',
+      'END:VEVENT','END:VCALENDAR'
+    ].join('\r\n');
+    const blob = new Blob([ics],{type:'text/calendar'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download='francesco-phd-defense.ics';a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  setUI();
+})();
 </script>
 </body>
 </html>
